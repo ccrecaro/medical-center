@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import User from '../models/user';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Asegúrate de importar Bootstrap
 
 const PatientRecord: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>(); // Obtiene el ID del paciente desde la URL
     const [patient, setPatient] = useState<User | null>(null);
     const [error, setError] = useState<string>("");
 
@@ -17,35 +16,12 @@ const PatientRecord: React.FC = () => {
                 }
                 return response.json();
             })
-            .then(data => setPatient(data))
+            .then(data => {
+                const formattedDate = new Date(data.birthday).toISOString().split('T')[0];
+                setPatient({ ...data, birthday: formattedDate });
+            })
             .catch(err => setError(err.message));
     }, [id]);
-
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!patient) {
-            setError("No patient data to save.");
-            return;
-        }
-
-        fetch(`http://localhost:3004/users/patients/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(patient)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Failed to update patient");
-            }
-            navigate('/dashboard');
-        })
-        .catch(err => setError(err.message));
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setPatient(prev => prev ? { ...prev, [name]: value } : null);
-    };
 
     if (error) {
         return <div className="alert alert-danger" role="alert">{error}</div>;
@@ -57,46 +33,27 @@ const PatientRecord: React.FC = () => {
 
     return (
         <div className="container mt-4">
-            <h1>Editar Paciente</h1>
-            <form onSubmit={handleSubmit} className="form-group">
-                <label className="form-label">
-                    Nombre:
-                    <input className="form-control"
-                        type="text"
-                        name="fullname"
-                        value={patient.fullname || ''}
-                        onChange={handleChange}
-                    />
-                </label><br />
-                <label className="form-label">
-                    Email:
-                    <input className="form-control"
-                        type="email"
-                        name="email"
-                        value={patient.email || ''}
-                        onChange={handleChange}
-                    />
-                </label><br />
-                <label className="form-label">
-                    Edad:
-                    <input className="form-control"
-                        type="number"
-                        name="age"
-                        value={patient.age || ''}
-                        onChange={handleChange}
-                    />
-                </label><br />
-                <label className="form-label">
-                    Fecha de nacimiento:
-                    <input className="form-control"
-                        type="date"
-                        name="birthday"
-                        value={patient.birthday || ''}
-                        onChange={handleChange}
-                    />
-                </label><br />
-                <button type="submit" className="btn btn-primary">Guardar cambios</button>
-            </form>
+            <h1>Patient Record</h1>
+            <table className="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>Name</th>
+                        <td>{patient.fullname}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>{patient.email}</td>
+                    </tr>
+                    <tr>
+                        <th>Age</th>
+                        <td>{patient.age}</td>
+                    </tr>
+                    <tr>
+                        <th>Birthday</th>
+                        <td>{patient.birthday}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     );
 };

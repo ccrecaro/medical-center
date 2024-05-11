@@ -49,9 +49,8 @@ const Login: React.FC = () => {
       console.log(data);
       if (response.ok) {
         console.log("Login Successful", data);
-        if(data.role === "doctor"){
-          navigate('/dashboard');
-        }
+        navigate('/dashboard');
+        
 
         // Maneja aquí el éxito del login (p.ej. almacenar el token de sesión)
       } else {
